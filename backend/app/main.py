@@ -1,4 +1,5 @@
 import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Request
@@ -6,11 +7,21 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
 
+from app import db
+from app.models import BoardData
+
 STATIC_DIR = Path(os.environ.get("STATIC_DIR", Path(__file__).parent / "static"))
 SESSION_SECRET = os.environ.get("SESSION_SECRET", "dev-secret")
 USERS = {"user": "password"}
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    db.init_db()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
 
 
@@ -48,6 +59,20 @@ def logout(request: Request):
 @app.get("/api/me")
 def me(username: str = Depends(current_user)):
     return {"username": username}
+
+
+@app.get("/api/board", response_model=BoardData)
+def get_board(username: str = Depends(current_user)):
+    return db.get_board(username)
+
+
+@app.put("/api/board", response_model=BoardData)
+def put_board(board: BoardData, username: str = Depends(current_user)):
+    stored_ids = [column["id"] for column in db.get_board(username)["columns"]]
+    if [column.id for column in board.columns] != stored_ids:
+        raise HTTPException(status_code=422, detail="Columns are fixed; only titles can change")
+    db.save_board(username, board.model_dump())
+    return db.get_board(username)
 
 
 app.mount("/", StaticFiles(directory=STATIC_DIR, html=True, check_dir=False), name="static")

@@ -63,11 +63,11 @@ Success: user approves `docs/DATABASE.md`.
 
 ## Part 6: Backend
 
-- [ ] `backend/app/db.py`: create db and tables if missing (stdlib `sqlite3`), seed user and default board
-- [ ] `GET /api/board` returns the signed-in user's board as `BoardData`
-- [ ] `PUT /api/board` validates (Pydantic) and replaces the board in a single transaction
-- [ ] DB path configurable via env var so tests use a temp file
-- [ ] Tests: db created from scratch; default board seeded; get board; put board then get returns the same data (renames, moves, adds, deletes); invalid payload rejected (422); unauthenticated requests get 401
+- [x] `backend/app/db.py`: create db and tables if missing (stdlib `sqlite3`), seed user and default board
+- [x] `GET /api/board` returns the signed-in user's board as `BoardData`
+- [x] `PUT /api/board` validates (Pydantic) and replaces the board in a single transaction
+- [x] DB path configurable via env var so tests use a temp file
+- [x] Tests: db created from scratch; default board seeded; get board; put board then get returns the same data (renames, moves, adds, deletes); invalid payload rejected (422); unauthenticated requests get 401
 
 Success: board persists across container restarts; all pytest tests pass.
 

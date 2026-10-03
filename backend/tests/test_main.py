@@ -1,16 +1,4 @@
-import pytest
-from fastapi.testclient import TestClient
-
-from app.main import app
-
-
-@pytest.fixture
-def client():
-    return TestClient(app)
-
-
-def login(client, password="password"):
-    return client.post("/api/login", json={"username": "user", "password": password})
+from conftest import login
 
 
 def test_health(client):

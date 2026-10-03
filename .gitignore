@@ -177,3 +177,6 @@ cython_debug/
 
 # Built frontend copied in for local serving
 backend/app/static/
+
+# SQLite database
+data/

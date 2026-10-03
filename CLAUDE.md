@@ -8,7 +8,7 @@ The imported AGENTS.md above holds the business requirements, technical decision
 
 ## Current state
 
-Parts 1-4 are done: a FastAPI backend in `backend/` with `/api/health` and session-cookie login (`/api/login`, `/api/logout`, `/api/me`, hardcoded `user` / `password`), a multi-stage root `Dockerfile` that builds the Next.js static export and serves it at `/`, and start/stop scripts in `scripts/`. The frontend shows a login form until signed in. Board state is still in memory in the frontend (no persistence yet). See `docs/PLAN.md` for what is next.
+Parts 1-6 are done: a FastAPI backend in `backend/` with `/api/health` and session-cookie login (`/api/login`, `/api/logout`, `/api/me`, hardcoded `user` / `password`), a multi-stage root `Dockerfile` that builds the Next.js static export and serves it at `/`, and start/stop scripts in `scripts/`. The frontend shows a login form until signed in. The backend persists each user's board in SQLite (`GET` / `PUT /api/board`, see `docs/DATABASE.md`), but the frontend does not use it yet: board state is still in memory in `KanbanBoard` (Part 7 connects them). See `docs/PLAN.md` for what is next.
 
 ## Backend and Docker commands
 
