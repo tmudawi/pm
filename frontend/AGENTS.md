@@ -24,6 +24,7 @@ Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, dnd-kit for drag
 
 - `data-testid="column-<columnId>"` on columns, `data-testid="card-<cardId>"` on cards.
 - Column title input has `aria-label="Column title"`; edit and remove buttons have `aria-label="Edit <title>"` / `"Delete <title>"`; edit form fields have `aria-label="Edit title"` / `"Edit details"`.
+- Login inputs have `aria-label="Username"` / `"Password"`; the error message has `role="alert"` (Next.js also renders a `role="alert"` route announcer, so in e2e match the error by text).
 
 ## Tests
 
