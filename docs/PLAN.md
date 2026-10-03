@@ -35,11 +35,11 @@ Success: `scripts/start` builds and runs the container; `http://localhost:8000` 
 
 ## Part 3: Add in Frontend
 
-- [ ] Set `output: "export"` in `next.config.ts`
-- [ ] Dockerfile Node build stage; copy `frontend/out` into the Python image; FastAPI serves it at `/` (API routes take precedence)
-- [ ] Remove the placeholder hello world page
-- [ ] Add card editing (edit title and details of an existing card) with unit and e2e tests
-- [ ] Test: backend test that `/` returns the built index when present; all frontend unit tests pass; Playwright e2e runs against the container (`baseURL` configurable via env var, default dev server)
+- [x] Set `output: "export"` in `next.config.ts`
+- [x] Dockerfile Node build stage; copy `frontend/out` into the Python image; FastAPI serves it at `/` (API routes take precedence)
+- [x] Remove the placeholder hello world page
+- [x] Add card editing (edit title and details of an existing card) with unit and e2e tests
+- [x] Test: backend test that `/` returns the built index when present; all frontend unit tests pass; Playwright e2e runs against the container (`baseURL` configurable via env var, default dev server)
 
 Success: Kanban board loads at `http://localhost:8000` from the container; drag and drop, rename, add, edit and delete work; all tests pass.
 

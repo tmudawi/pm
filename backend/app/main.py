@@ -1,9 +1,10 @@
+import os
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-STATIC_DIR = Path(__file__).parent / "static"
+STATIC_DIR = Path(os.environ.get("STATIC_DIR", Path(__file__).parent / "static"))
 
 app = FastAPI()
 
@@ -13,4 +14,4 @@ def health():
     return {"status": "ok"}
 
 
-app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
+app.mount("/", StaticFiles(directory=STATIC_DIR, html=True, check_dir=False), name="static")

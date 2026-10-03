@@ -8,7 +8,7 @@ The imported AGENTS.md above holds the business requirements, technical decision
 
 ## Current state
 
-Part 2 (scaffolding) is done: a FastAPI backend in `backend/` serving a hello world page and `/api/health`, a root `Dockerfile`, and start/stop scripts in `scripts/`. The frontend is still a standalone Next.js demo with in-memory state, not yet served by the backend. See `docs/PLAN.md` for what is next.
+Parts 1-3 are done: a FastAPI backend in `backend/` with `/api/health`, a multi-stage root `Dockerfile` that builds the Next.js static export and serves it at `/`, and start/stop scripts in `scripts/`. Board state is still in memory in the frontend (no auth or persistence yet). See `docs/PLAN.md` for what is next.
 
 ## Backend and Docker commands
 
@@ -29,6 +29,7 @@ npm run lint
 npm run test:unit          # Vitest (jsdom), src/**/*.test.{ts,tsx}
 npm run test:e2e           # Playwright, tests/*.spec.ts; starts dev server on 127.0.0.1:3000
 npm run test:all
+BASE_URL=http://localhost:8000 npm run test:e2e   # e2e against the running container
 
 npx vitest run src/lib/kanban.test.ts          # single unit test file
 npx vitest run -t "test name"                  # single unit test by name
