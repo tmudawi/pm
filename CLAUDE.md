@@ -8,7 +8,7 @@ The imported AGENTS.md above holds the business requirements, technical decision
 
 ## Current state
 
-Parts 1-3 are done: a FastAPI backend in `backend/` with `/api/health`, a multi-stage root `Dockerfile` that builds the Next.js static export and serves it at `/`, and start/stop scripts in `scripts/`. Board state is still in memory in the frontend (no auth or persistence yet). See `docs/PLAN.md` for what is next.
+Parts 1-4 are done: a FastAPI backend in `backend/` with `/api/health` and session-cookie login (`/api/login`, `/api/logout`, `/api/me`, hardcoded `user` / `password`), a multi-stage root `Dockerfile` that builds the Next.js static export and serves it at `/`, and start/stop scripts in `scripts/`. The frontend shows a login form until signed in. Board state is still in memory in the frontend (no persistence yet). See `docs/PLAN.md` for what is next.
 
 ## Backend and Docker commands
 
@@ -23,11 +23,11 @@ scripts/stop.sh   |  scripts/stop.ps1
 
 ```bash
 npm install
-npm run dev                # dev server on :3000
+npm run dev                # dev server on :3000; proxies /api to the backend on :8000 (start it separately)
 npm run build
 npm run lint
 npm run test:unit          # Vitest (jsdom), src/**/*.test.{ts,tsx}
-npm run test:e2e           # Playwright, tests/*.spec.ts; starts dev server on 127.0.0.1:3000
+npm run test:e2e           # Playwright, tests/*.spec.ts; starts backend on :8000 and dev server on :3000
 npm run test:all
 BASE_URL=http://localhost:8000 npm run test:e2e   # e2e against the running container
 

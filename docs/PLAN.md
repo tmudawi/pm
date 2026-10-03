@@ -45,10 +45,10 @@ Success: Kanban board loads at `http://localhost:8000` from the container; drag 
 
 ## Part 4: Fake user sign in
 
-- [ ] Backend: `SessionMiddleware` (secret from env with a dev default), `POST /api/login`, `POST /api/logout`, `GET /api/me`
-- [ ] Frontend: on load call `/api/me`; show a login form if 401, else the board. Log out button in the header
-- [ ] Next dev server proxies `/api` to `localhost:8000` (rewrites in dev only) so `npm run dev` still works
-- [ ] Tests: pytest for login success, wrong credentials (401), me before/after login, logout. Unit tests for login form. E2E: wrong password shows error, correct login shows board, logout returns to login
+- [x] Backend: `SessionMiddleware` (secret from env with a dev default), `POST /api/login`, `POST /api/logout`, `GET /api/me`
+- [x] Frontend: on load call `/api/me`; show a login form if 401, else the board. Log out button in the header
+- [x] Next dev server proxies `/api` to `localhost:8000` (rewrites in dev only) so `npm run dev` still works
+- [x] Tests: pytest for login success, wrong credentials (401), me before/after login, logout. Unit tests for login form. E2E: wrong password shows error, correct login shows board, logout returns to login
 
 Success: board is not visible until logging in with `user` / `password`; logout works; session survives page reload; all tests pass.
 
