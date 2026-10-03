@@ -90,11 +90,11 @@ Success: real call returns an answer containing "4".
 
 ## Part 9: AI with board context and structured outputs
 
-- [ ] `POST /api/chat` takes `{ message, history }`; sends system prompt + current board JSON + history + message
-- [ ] Response format is a JSON schema for `{ message, board | null }`; parse with Pydantic
-- [ ] If `board` is returned, validate and save it; respond with `{ message, board }`
-- [ ] Remove the temporary `/api/ai/test` route
-- [ ] Tests (AI mocked): reply without board change leaves db unchanged; reply with board change is saved; invalid AI board is rejected and the db is unchanged; history is passed through. Real-AI integration test (skipped without key): ask to create a card and verify it exists in the db
+- [x] `POST /api/chat` takes `{ message, history }`; sends system prompt + current board JSON + history + message
+- [x] Response format is a JSON schema for `{ message, board | null }`; parse with Pydantic
+- [x] If `board` is returned, validate and save it; respond with `{ message, board }`
+- [x] Remove the temporary `/api/ai/test` route
+- [x] Tests (AI mocked): reply without board change leaves db unchanged; reply with board change is saved; invalid AI board is rejected and the db is unchanged; history is passed through. Real-AI integration test (skipped without key): ask to create a card and verify it exists in the db
 
 Success: asking the AI to create, edit or move cards updates the stored board; all tests pass.
 

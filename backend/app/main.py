@@ -4,11 +4,11 @@ from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from starlette.middleware.sessions import SessionMiddleware
 
 from app import ai, db
-from app.models import BoardData
+from app.models import BoardData, ChatRequest, ChatResponse
 
 STATIC_DIR = Path(os.environ.get("STATIC_DIR", Path(__file__).parent / "static"))
 SESSION_SECRET = os.environ.get("SESSION_SECRET", "dev-secret")
@@ -66,19 +66,33 @@ def get_board(username: str = Depends(current_user)):
     return db.get_board(username)
 
 
+def same_columns(username: str, board: BoardData) -> bool:
+    stored_ids = [column["id"] for column in db.get_board(username)["columns"]]
+    return [column.id for column in board.columns] == stored_ids
+
+
 @app.put("/api/board", response_model=BoardData)
 def put_board(board: BoardData, username: str = Depends(current_user)):
-    stored_ids = [column["id"] for column in db.get_board(username)["columns"]]
-    if [column.id for column in board.columns] != stored_ids:
+    if not same_columns(username, board):
         raise HTTPException(status_code=422, detail="Columns are fixed; only titles can change")
     db.save_board(username, board.model_dump())
     return db.get_board(username)
 
 
-# Temporary connectivity check, removed in Part 9
-@app.post("/api/ai/test")
-def ai_test(username: str = Depends(current_user)):
-    return {"reply": ai.ask("What is 2+2?")}
+@app.post("/api/chat", response_model=ChatResponse)
+def chat(request: ChatRequest, username: str = Depends(current_user)):
+    board = BoardData(**db.get_board(username))
+    reply = ai.chat(board, request.history, request.message)
+    if reply.board is None:
+        return {"message": reply.message, "board": None}
+    try:
+        new_board = reply.board.to_board_data()
+    except ValidationError:
+        new_board = None
+    if new_board is None or not same_columns(username, new_board):
+        raise HTTPException(status_code=502, detail="The AI returned an invalid board; nothing was changed")
+    db.save_board(username, new_board.model_dump())
+    return {"message": reply.message, "board": db.get_board(username)}
 
 
 app.mount("/", StaticFiles(directory=STATIC_DIR, html=True, check_dir=False), name="static")

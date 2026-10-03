@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, model_validator
 
 
@@ -25,3 +27,34 @@ class BoardData(BaseModel):
         if sorted(placed) != sorted(self.cards):
             raise ValueError("every card must appear in exactly one column")
         return self
+
+
+class AIBoard(BaseModel):
+    """Board shape for AI structured output: strict JSON schema cannot express
+    a map with arbitrary keys, so cards are a list."""
+
+    columns: list[Column]
+    cards: list[Card]
+
+    def to_board_data(self) -> BoardData:
+        return BoardData(columns=self.columns, cards={card.id: card for card in self.cards})
+
+
+class AIReply(BaseModel):
+    message: str
+    board: AIBoard | None
+
+
+class ChatMessage(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str
+
+
+class ChatRequest(BaseModel):
+    message: str
+    history: list[ChatMessage] = []
+
+
+class ChatResponse(BaseModel):
+    message: str
+    board: BoardData | None
