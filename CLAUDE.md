@@ -8,12 +8,13 @@ The imported AGENTS.md above holds the business requirements, technical decision
 
 ## Current state
 
-Parts 1-7 are done: a FastAPI backend in `backend/` with `/api/health` and session-cookie login (`/api/login`, `/api/logout`, `/api/me`, hardcoded `user` / `password`), a multi-stage root `Dockerfile` that builds the Next.js static export and serves it at `/`, and start/stop scripts in `scripts/`. The frontend shows a login form until signed in. The backend persists each user's board in SQLite (`GET` / `PUT /api/board`, see `docs/DATABASE.md`), and the frontend loads the board from it and saves after every change. See `docs/PLAN.md` for what is next.
+Parts 1-8 are done: a FastAPI backend in `backend/` with `/api/health` and session-cookie login (`/api/login`, `/api/logout`, `/api/me`, hardcoded `user` / `password`), a multi-stage root `Dockerfile` that builds the Next.js static export and serves it at `/`, and start/stop scripts in `scripts/`. The frontend shows a login form until signed in. The backend persists each user's board in SQLite (`GET` / `PUT /api/board`, see `docs/DATABASE.md`), and the frontend loads the board from it and saves after every change. `backend/app/ai.py` connects to OpenRouter; `POST /api/ai/test` is a temporary connectivity check. See `docs/PLAN.md` for what is next.
 
 ## Backend and Docker commands
 
 ```bash
 cd backend && uv run pytest                     # all backend tests (use `python -m uv` if uv is not on PATH)
+uv run --env-file ../.env pytest                # also run the real OpenRouter tests
 uv run pytest tests/test_main.py::test_health   # single test
 scripts/start.sh  |  scripts/start.ps1          # build image and run container on :8000
 scripts/stop.sh   |  scripts/stop.ps1

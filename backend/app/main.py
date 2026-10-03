@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
 
-from app import db
+from app import ai, db
 from app.models import BoardData
 
 STATIC_DIR = Path(os.environ.get("STATIC_DIR", Path(__file__).parent / "static"))
@@ -73,6 +73,12 @@ def put_board(board: BoardData, username: str = Depends(current_user)):
         raise HTTPException(status_code=422, detail="Columns are fixed; only titles can change")
     db.save_board(username, board.model_dump())
     return db.get_board(username)
+
+
+# Temporary connectivity check, removed in Part 9
+@app.post("/api/ai/test")
+def ai_test(username: str = Depends(current_user)):
+    return {"reply": ai.ask("What is 2+2?")}
 
 
 app.mount("/", StaticFiles(directory=STATIC_DIR, html=True, check_dir=False), name="static")

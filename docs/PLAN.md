@@ -82,9 +82,9 @@ Success: all board changes persist across reload and container restart; all test
 
 ## Part 8: AI connectivity
 
-- [ ] Add `openai` dependency; `backend/app/ai.py` creates the OpenRouter client
-- [ ] `POST /api/ai/test` (temporary) sends "What is 2+2?" and returns the reply
-- [ ] Tests: unit test with the client mocked; an integration test that calls OpenRouter for real, skipped when `OPENROUTER_API_KEY` is not set
+- [x] Add `openai` dependency; `backend/app/ai.py` creates the OpenRouter client
+- [x] `POST /api/ai/test` (temporary) sends "What is 2+2?" and returns the reply
+- [x] Tests: unit test with the client mocked; an integration test that calls OpenRouter for real, skipped when `OPENROUTER_API_KEY` is not set
 
 Success: real call returns an answer containing "4".
 
