@@ -100,9 +100,9 @@ Success: asking the AI to create, edit or move cards updates the stored board; a
 
 ## Part 10: AI chat sidebar
 
-- [ ] Collapsible sidebar on the right with message list, input and send button (purple submit), loading state
-- [ ] Keeps history in state and sends it with each message
-- [ ] When the response includes a board, replace the board state so the UI refreshes immediately
-- [ ] Tests: unit tests with mocked API for sending, rendering replies, and board refresh; e2e with `/api/chat` mocked via Playwright route interception verifying the board updates; one manual check against the real AI
+- [x] Collapsible sidebar on the right with message list, input and send button (purple submit), loading state
+- [x] Keeps history in state and sends it with each message
+- [x] When the response includes a board, replace the board state so the UI refreshes immediately
+- [x] Tests: unit tests with mocked API for sending, rendering replies, and board refresh; e2e with `/api/chat` mocked via Playwright route interception verifying the board updates; one manual check against the real AI
 
 Success: user can chat with the AI in the sidebar, and AI-made changes to cards appear on the board without reload; all tests pass.

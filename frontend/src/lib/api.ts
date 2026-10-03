@@ -43,3 +43,26 @@ export const saveBoard = (board: BoardData) => {
   lastSave = lastSave.then(save, save);
   return lastSave;
 };
+
+export type ChatMessage = { role: "user" | "assistant"; content: string };
+
+export type ChatReply = { message: string; board: BoardData | null };
+
+export const sendChat = async (
+  message: string,
+  history: ChatMessage[]
+): Promise<ChatReply> => {
+  const response = await fetch("/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, history }),
+  });
+  if (!response.ok) {
+    throw new Error(
+      response.status === 502
+        ? "The AI suggested an invalid change, so the board was not changed. Please try again."
+        : "The assistant could not answer. Please try again."
+    );
+  }
+  return response.json();
+};

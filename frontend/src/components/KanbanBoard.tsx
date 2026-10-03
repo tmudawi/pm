@@ -13,6 +13,7 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
+import { ChatSidebar } from "@/components/ChatSidebar";
 import { KanbanColumn } from "@/components/KanbanColumn";
 import { KanbanCardPreview } from "@/components/KanbanCardPreview";
 import { getBoard, saveBoard } from "@/lib/api";
@@ -32,6 +33,7 @@ type KanbanBoardProps = {
 export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
   const [board, setBoard] = useState<BoardData | null>(null);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -126,11 +128,11 @@ export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
   const activeCard = activeCardId ? board.cards[activeCardId] : null;
 
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative flex overflow-hidden">
       <div className="pointer-events-none absolute left-0 top-0 h-[420px] w-[420px] -translate-x-1/3 -translate-y-1/3 rounded-full bg-[radial-gradient(circle,_rgba(32,157,215,0.25)_0%,_rgba(32,157,215,0.05)_55%,_transparent_70%)]" />
       <div className="pointer-events-none absolute bottom-0 right-0 h-[520px] w-[520px] translate-x-1/4 translate-y-1/4 rounded-full bg-[radial-gradient(circle,_rgba(117,57,145,0.18)_0%,_rgba(117,57,145,0.05)_55%,_transparent_75%)]" />
 
-      <main className="relative mx-auto flex min-h-screen max-w-[1500px] flex-col gap-10 px-6 pb-16 pt-12">
+      <main className="relative mx-auto flex min-h-screen min-w-0 max-w-[1500px] flex-1 flex-col gap-10 px-6 pb-16 pt-12">
         <header className="flex flex-col gap-6 rounded-[32px] border border-[var(--stroke)] bg-white/80 p-8 shadow-[var(--shadow)] backdrop-blur">
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div>
@@ -146,13 +148,23 @@ export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
               </p>
             </div>
             <div className="flex flex-col items-end gap-3">
-              <button
-                type="button"
-                onClick={onLogout}
-                className="rounded-full border border-[var(--stroke)] px-4 py-2 text-xs font-semibold uppercase tracking-wide text-[var(--gray-text)] transition hover:text-[var(--navy-dark)]"
-              >
-                Log out
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setChatOpen(!chatOpen)}
+                  aria-expanded={chatOpen}
+                  className="rounded-full border border-[var(--primary-blue)] px-4 py-2 text-xs font-semibold uppercase tracking-wide text-[var(--primary-blue)] transition hover:bg-[var(--primary-blue)] hover:text-white"
+                >
+                  AI Assistant
+                </button>
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="rounded-full border border-[var(--stroke)] px-4 py-2 text-xs font-semibold uppercase tracking-wide text-[var(--gray-text)] transition hover:text-[var(--navy-dark)]"
+                >
+                  Log out
+                </button>
+              </div>
               <div className="rounded-2xl border border-[var(--stroke)] bg-[var(--surface)] px-5 py-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[var(--gray-text)]">
                   Focus
@@ -205,6 +217,11 @@ export const KanbanBoard = ({ onLogout }: KanbanBoardProps) => {
           </DragOverlay>
         </DndContext>
       </main>
+      <ChatSidebar
+        open={chatOpen}
+        onClose={() => setChatOpen(false)}
+        onBoardUpdate={setBoard}
+      />
     </div>
   );
 };

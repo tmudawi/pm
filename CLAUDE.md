@@ -8,7 +8,7 @@ The imported AGENTS.md above holds the business requirements, technical decision
 
 ## Current state
 
-Parts 1-9 are done: a FastAPI backend in `backend/` with `/api/health` and session-cookie login (`/api/login`, `/api/logout`, `/api/me`, hardcoded `user` / `password`), a multi-stage root `Dockerfile` that builds the Next.js static export and serves it at `/`, and start/stop scripts in `scripts/`. The frontend shows a login form until signed in. The backend persists each user's board in SQLite (`GET` / `PUT /api/board`, see `docs/DATABASE.md`), and the frontend loads the board from it and saves after every change. `POST /api/chat` sends the board and chat history to the AI (`backend/app/ai.py`, OpenRouter structured outputs) and saves any board it returns after validation. The frontend has no chat UI yet (Part 10). See `docs/PLAN.md` for what is next.
+All plan parts (1-10) are done: a FastAPI backend in `backend/` with `/api/health` and session-cookie login (`/api/login`, `/api/logout`, `/api/me`, hardcoded `user` / `password`), a multi-stage root `Dockerfile` that builds the Next.js static export and serves it at `/`, and start/stop scripts in `scripts/`. The frontend shows a login form until signed in. The backend persists each user's board in SQLite (`GET` / `PUT /api/board`, see `docs/DATABASE.md`), and the frontend loads the board from it and saves after every change. `POST /api/chat` sends the board and chat history to the AI (`backend/app/ai.py`, OpenRouter structured outputs) and saves any board it returns after validation. The board page has a collapsible AI chat sidebar (`ChatSidebar`) that applies boards returned by the AI immediately. See `docs/PLAN.md` for the build history.
 
 ## Backend and Docker commands
 

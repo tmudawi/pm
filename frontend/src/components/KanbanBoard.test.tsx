@@ -5,6 +5,7 @@ import type { BoardData } from "@/lib/kanban";
 import { testBoard } from "@/test/board";
 
 let fetchMock: ReturnType<typeof vi.fn>;
+let chatReply: { message: string; board: BoardData | null };
 
 const savedBoards = (): BoardData[] =>
   fetchMock.mock.calls
@@ -19,10 +20,10 @@ const renderBoard = async () => {
 
 describe("KanbanBoard", () => {
   beforeEach(() => {
-    fetchMock = vi.fn().mockResolvedValue({
+    fetchMock = vi.fn(async (url: string) => ({
       ok: true,
-      json: async () => structuredClone(testBoard),
-    });
+      json: async () => (url === "/api/chat" ? chatReply : structuredClone(testBoard)),
+    }));
     vi.stubGlobal("fetch", fetchMock);
   });
 
@@ -107,6 +108,24 @@ describe("KanbanBoard", () => {
 
     expect(within(column).getByText("Align roadmap themes")).toBeInTheDocument();
     expect(within(column).queryByText("Discarded")).not.toBeInTheDocument();
+    expect(savedBoards()).toHaveLength(0);
+  });
+
+  it("refreshes the board from an AI reply without saving again", async () => {
+    const updated = structuredClone(testBoard);
+    updated.cards["card-1"].title = "Renamed by AI";
+    chatReply = { message: "Renamed it.", board: updated };
+    await renderBoard();
+
+    const toggle = screen.getByRole("button", { name: /ai assistant/i });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await userEvent.type(screen.getByLabelText("Message"), "Rename card 1");
+    await userEvent.click(screen.getByRole("button", { name: /send/i }));
+
+    expect(await screen.findByText("Renamed by AI")).toBeInTheDocument();
+    expect(screen.queryByText("Align roadmap themes")).not.toBeInTheDocument();
     expect(savedBoards()).toHaveLength(0);
   });
 });

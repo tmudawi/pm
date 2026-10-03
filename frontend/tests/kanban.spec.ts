@@ -152,4 +152,29 @@ test.describe("when signed in", () => {
     await expect(page.getByTestId("card-card-6")).toHaveCount(0);
     await expect(review.getByTestId("card-card-1")).toBeVisible();
   });
+
+  test("AI chat updates the board", async ({ page }) => {
+    const board = structuredClone(testBoard);
+    board.columns[0].cardIds = ["card-2", "card-ai-1"];
+    board.columns[4].cardIds.push("card-1");
+    board.cards["card-ai-1"] = { id: "card-ai-1", title: "Write release notes", details: "For v1." };
+    await page.route("**/api/chat", (route) =>
+      route.fulfill({ json: { message: "Added a card and moved card 1 to Done.", board } })
+    );
+
+    const sidebar = page.getByRole("complementary", { name: "AI chat" });
+    await expect(sidebar).toBeHidden();
+    await page.getByRole("button", { name: "AI Assistant" }).click();
+    await expect(sidebar).toBeVisible();
+
+    await sidebar.getByLabel("Message").fill("Add release notes and finish card 1");
+    await sidebar.getByRole("button", { name: /send/i }).click();
+
+    await expect(sidebar.getByText("Added a card and moved card 1 to Done.")).toBeVisible();
+    await expect(page.getByTestId("column-col-backlog").getByText("Write release notes")).toBeVisible();
+    await expect(page.getByTestId("column-col-done").getByTestId("card-card-1")).toBeVisible();
+
+    await sidebar.getByRole("button", { name: "Close chat" }).click();
+    await expect(sidebar).toBeHidden();
+  });
 });
