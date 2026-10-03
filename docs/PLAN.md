@@ -73,10 +73,10 @@ Success: board persists across container restarts; all pytest tests pass.
 
 ## Part 7: Frontend + Backend
 
-- [ ] `src/lib/api.ts` with `getBoard` and `saveBoard`
-- [ ] `KanbanBoard` loads the board from the API after login and saves after each change (rename saves on blur, not per keystroke)
-- [ ] Remove `initialData` from the frontend (seed lives in the backend)
-- [ ] Tests: unit tests with mocked fetch for load and save; e2e: add, edit, move, rename, delete, then reload and verify persistence
+- [x] `src/lib/api.ts` with `getBoard` and `saveBoard`
+- [x] `KanbanBoard` loads the board from the API after login and saves after each change (rename saves on blur, not per keystroke)
+- [x] Remove `initialData` from the frontend (seed lives in the backend)
+- [x] Tests: unit tests with mocked fetch for load and save; e2e: add, edit, move, rename, delete, then reload and verify persistence
 
 Success: all board changes persist across reload and container restart; all tests pass.
 

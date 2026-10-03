@@ -4,6 +4,8 @@ const baseURL = process.env.BASE_URL;
 
 export default defineConfig({
   testDir: "./tests",
+  // All tests sign in as the same user and share one board on the server
+  workers: 1,
   timeout: 60_000,
   expect: {
     timeout: 10_000,
@@ -18,6 +20,7 @@ export default defineConfig({
         {
           command: "uv run uvicorn app.main:app --host 127.0.0.1 --port 8000",
           cwd: "../backend",
+          env: { DB_PATH: "data/e2e.db" },
           url: "http://127.0.0.1:8000/api/health",
           reuseExistingServer: true,
           timeout: 120_000,

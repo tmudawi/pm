@@ -1,52 +1,78 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { KanbanBoard } from "@/components/KanbanBoard";
+import type { BoardData } from "@/lib/kanban";
+import { testBoard } from "@/test/board";
 
-const getFirstColumn = () => screen.getAllByTestId(/column-/i)[0];
+let fetchMock: ReturnType<typeof vi.fn>;
+
+const savedBoards = (): BoardData[] =>
+  fetchMock.mock.calls
+    .filter(([, init]) => init?.method === "PUT")
+    .map(([, init]) => JSON.parse(init.body));
+
+const renderBoard = async () => {
+  render(<KanbanBoard onLogout={() => {}} />);
+  await screen.findAllByTestId(/column-/i);
+  return screen.getAllByTestId(/column-/i)[0];
+};
 
 describe("KanbanBoard", () => {
-  it("renders five columns", () => {
-    render(<KanbanBoard onLogout={() => {}} />);
-    expect(screen.getAllByTestId(/column-/i)).toHaveLength(5);
+  beforeEach(() => {
+    fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => structuredClone(testBoard),
+    });
+    vi.stubGlobal("fetch", fetchMock);
   });
 
-  it("renames a column", async () => {
-    render(<KanbanBoard onLogout={() => {}} />);
-    const column = getFirstColumn();
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("loads the board from the API", async () => {
+    await renderBoard();
+    expect(fetchMock).toHaveBeenCalledWith("/api/board");
+    expect(screen.getAllByTestId(/column-/i)).toHaveLength(5);
+    expect(screen.getByText("Align roadmap themes")).toBeInTheDocument();
+    expect(savedBoards()).toHaveLength(0);
+  });
+
+  it("renames a column and saves on blur", async () => {
+    const column = await renderBoard();
     const input = within(column).getByLabelText("Column title");
     await userEvent.clear(input);
     await userEvent.type(input, "New Name");
     expect(input).toHaveValue("New Name");
+    expect(savedBoards()).toHaveLength(0);
+
+    await userEvent.tab();
+    expect(savedBoards()).toHaveLength(1);
+    expect(savedBoards()[0].columns[0].title).toBe("New Name");
   });
 
-  it("adds and removes a card", async () => {
-    render(<KanbanBoard onLogout={() => {}} />);
-    const column = getFirstColumn();
-    const addButton = within(column).getByRole("button", {
-      name: /add a card/i,
-    });
-    await userEvent.click(addButton);
-
-    const titleInput = within(column).getByPlaceholderText(/card title/i);
-    await userEvent.type(titleInput, "New card");
-    const detailsInput = within(column).getByPlaceholderText(/details/i);
-    await userEvent.type(detailsInput, "Notes");
-
+  it("adds and removes a card, saving each change", async () => {
+    const column = await renderBoard();
+    await userEvent.click(within(column).getByRole("button", { name: /add a card/i }));
+    await userEvent.type(within(column).getByPlaceholderText(/card title/i), "New card");
+    await userEvent.type(within(column).getByPlaceholderText(/details/i), "Notes");
     await userEvent.click(within(column).getByRole("button", { name: /add card/i }));
 
     expect(within(column).getByText("New card")).toBeInTheDocument();
+    const added = savedBoards()[0];
+    const newId = added.columns[0].cardIds.at(-1)!;
+    expect(added.cards[newId]).toEqual({ id: newId, title: "New card", details: "Notes" });
 
-    const deleteButton = within(column).getByRole("button", {
-      name: /delete new card/i,
-    });
-    await userEvent.click(deleteButton);
+    await userEvent.click(within(column).getByRole("button", { name: /delete new card/i }));
 
     expect(within(column).queryByText("New card")).not.toBeInTheDocument();
+    const removed = savedBoards()[1];
+    expect(removed.cards[newId]).toBeUndefined();
+    expect(removed.columns[0].cardIds).not.toContain(newId);
   });
 
-  it("edits a card", async () => {
-    render(<KanbanBoard onLogout={() => {}} />);
-    const column = getFirstColumn();
+  it("edits a card and saves it", async () => {
+    const column = await renderBoard();
     await userEvent.click(
       within(column).getByRole("button", { name: /edit align roadmap themes/i })
     );
@@ -62,11 +88,15 @@ describe("KanbanBoard", () => {
     expect(within(column).getByText("Updated title")).toBeInTheDocument();
     expect(within(column).getByText("Updated details")).toBeInTheDocument();
     expect(within(column).queryByText("Align roadmap themes")).not.toBeInTheDocument();
+    expect(savedBoards()[0].cards["card-1"]).toEqual({
+      id: "card-1",
+      title: "Updated title",
+      details: "Updated details",
+    });
   });
 
-  it("cancels editing a card", async () => {
-    render(<KanbanBoard onLogout={() => {}} />);
-    const column = getFirstColumn();
+  it("cancels editing a card without saving", async () => {
+    const column = await renderBoard();
     await userEvent.click(
       within(column).getByRole("button", { name: /edit align roadmap themes/i })
     );
@@ -77,5 +107,6 @@ describe("KanbanBoard", () => {
 
     expect(within(column).getByText("Align roadmap themes")).toBeInTheDocument();
     expect(within(column).queryByText("Discarded")).not.toBeInTheDocument();
+    expect(savedBoards()).toHaveLength(0);
   });
 });

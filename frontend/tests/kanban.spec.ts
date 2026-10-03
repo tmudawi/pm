@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { testBoard } from "../src/test/board";
 
 const login = async (page: Page, password = "password") => {
   await page.goto("/");
@@ -30,6 +31,10 @@ test("logs in, survives reload, and logs out", async ({ page }) => {
 test.describe("when signed in", () => {
   test.beforeEach(async ({ page }) => {
     await login(page);
+    await expect(page.locator('[data-testid^="column-"]')).toHaveCount(5);
+    // Start every test from the default board
+    await page.request.put("/api/board", { data: testBoard });
+    await page.reload();
     await expect(page.locator('[data-testid^="column-"]')).toHaveCount(5);
   });
 
@@ -65,6 +70,27 @@ test.describe("when signed in", () => {
     await expect(targetColumn.getByTestId("card-card-1")).toBeVisible();
   });
 
+  test("reorders cards within a column", async ({ page }) => {
+    // Both backlog cards must be on screen to drag between them
+    await page.setViewportSize({ width: 1280, height: 1200 });
+    const backlog = page.getByTestId("column-col-backlog");
+    const cardBox = await page.getByTestId("card-card-2").boundingBox();
+    const targetBox = await page.getByTestId("card-card-1").boundingBox();
+    if (!cardBox || !targetBox) {
+      throw new Error("Unable to resolve drag coordinates.");
+    }
+
+    await page.mouse.move(cardBox.x + cardBox.width / 2, cardBox.y + cardBox.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(targetBox.x + targetBox.width / 2, targetBox.y + 10, { steps: 12 });
+    await page.mouse.up();
+
+    await expect(backlog.locator('[data-testid^="card-"]').first()).toHaveAttribute(
+      "data-testid",
+      "card-card-2"
+    );
+  });
+
   test("edits a card", async ({ page }) => {
     const card = page.getByTestId("card-card-2");
     await card.getByRole("button", { name: /edit/i }).click();
@@ -73,5 +99,57 @@ test.describe("when signed in", () => {
     await card.getByRole("button", { name: /save/i }).click();
     await expect(card.getByText("Edited in e2e")).toBeVisible();
     await expect(card.getByText("New details.")).toBeVisible();
+  });
+
+  test("changes persist across reload", async ({ page }) => {
+    const backlog = page.getByTestId("column-col-backlog");
+    const review = page.getByTestId("column-col-review");
+
+    // add
+    await backlog.getByRole("button", { name: /add a card/i }).click();
+    await backlog.getByPlaceholder("Card title").fill("Persisted card");
+    await backlog.getByPlaceholder("Details").fill("Survives reload.");
+    await backlog.getByRole("button", { name: /add card/i }).click();
+    await expect(backlog.getByText("Persisted card")).toBeVisible();
+
+    // edit
+    const card2 = page.getByTestId("card-card-2");
+    await card2.getByRole("button", { name: /edit/i }).click();
+    await card2.getByLabel("Edit title").fill("Edited and saved");
+    await card2.getByRole("button", { name: /save/i }).click();
+    await expect(card2.getByText("Edited and saved")).toBeVisible();
+
+    // rename (saves on blur)
+    const title = backlog.getByLabel("Column title");
+    await title.fill("Ideas");
+    await title.blur();
+
+    // delete
+    await page.getByTestId("card-card-6").getByRole("button", { name: /delete/i }).click();
+    await expect(page.getByTestId("card-card-6")).toHaveCount(0);
+
+    // move card-1 into the now empty review column
+    const cardBox = await page.getByTestId("card-card-1").boundingBox();
+    const columnBox = await review.boundingBox();
+    if (!cardBox || !columnBox) {
+      throw new Error("Unable to resolve drag coordinates.");
+    }
+    await page.mouse.move(cardBox.x + cardBox.width / 2, cardBox.y + cardBox.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(columnBox.x + columnBox.width / 2, columnBox.y + 120, { steps: 12 });
+    const saved = page.waitForResponse(
+      (response) => response.url().endsWith("/api/board") && response.request().method() === "PUT"
+    );
+    await page.mouse.up();
+    await expect(review.getByTestId("card-card-1")).toBeVisible();
+    await saved;
+
+    await page.reload();
+
+    await expect(backlog.getByLabel("Column title")).toHaveValue("Ideas");
+    await expect(backlog.getByText("Persisted card")).toBeVisible();
+    await expect(page.getByTestId("card-card-2").getByText("Edited and saved")).toBeVisible();
+    await expect(page.getByTestId("card-card-6")).toHaveCount(0);
+    await expect(review.getByTestId("card-card-1")).toBeVisible();
   });
 });

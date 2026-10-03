@@ -8,7 +8,7 @@ The imported AGENTS.md above holds the business requirements, technical decision
 
 ## Current state
 
-Parts 1-6 are done: a FastAPI backend in `backend/` with `/api/health` and session-cookie login (`/api/login`, `/api/logout`, `/api/me`, hardcoded `user` / `password`), a multi-stage root `Dockerfile` that builds the Next.js static export and serves it at `/`, and start/stop scripts in `scripts/`. The frontend shows a login form until signed in. The backend persists each user's board in SQLite (`GET` / `PUT /api/board`, see `docs/DATABASE.md`), but the frontend does not use it yet: board state is still in memory in `KanbanBoard` (Part 7 connects them). See `docs/PLAN.md` for what is next.
+Parts 1-7 are done: a FastAPI backend in `backend/` with `/api/health` and session-cookie login (`/api/login`, `/api/logout`, `/api/me`, hardcoded `user` / `password`), a multi-stage root `Dockerfile` that builds the Next.js static export and serves it at `/`, and start/stop scripts in `scripts/`. The frontend shows a login form until signed in. The backend persists each user's board in SQLite (`GET` / `PUT /api/board`, see `docs/DATABASE.md`), and the frontend loads the board from it and saves after every change. See `docs/PLAN.md` for what is next.
 
 ## Backend and Docker commands
 
@@ -38,9 +38,9 @@ npx playwright test tests/kanban.spec.ts -g "name"  # single e2e test
 
 ## Frontend architecture
 
-- `src/lib/kanban.ts` is the data model and pure logic: `BoardData` is normalized as `columns` (ordered, each holding ordered `cardIds`) plus a `cards` map keyed by id. `moveCard` handles both reordering within a column and moving across columns, where the drop target id may be a card id or a column id. `initialData` is the hardcoded demo board (5 fixed columns).
-- `src/components/KanbanBoard.tsx` is the single stateful client component: it owns `BoardData` in `useState`, wires up `@dnd-kit` (`DndContext`, `DragOverlay`) and passes rename/add/delete/edit handlers down to `KanbanColumn` / `KanbanCard` / `NewCardForm`.
-- `src/app/page.tsx` just renders `KanbanBoard`. Path alias `@/` maps to `src/`.
+- `src/lib/kanban.ts` is the data model and pure logic: `BoardData` is normalized as `columns` (ordered, each holding ordered `cardIds`) plus a `cards` map keyed by id. `moveCard` handles both reordering within a column and moving across columns, where the drop target id may be a card id or a column id.
+- `src/components/KanbanBoard.tsx` is the single stateful board component: it loads `BoardData` from the API into `useState`, saves the whole board after each change (`src/lib/api.ts`), wires up `@dnd-kit` (`DndContext`, `DragOverlay`) and passes rename/add/delete/edit handlers down to `KanbanColumn` / `KanbanCard` / `NewCardForm`.
+- `src/app/page.tsx` checks the session (`/api/me`) and renders `LoginForm` or `KanbanBoard`. Path alias `@/` maps to `src/`.
 - Styling is Tailwind v4 (via `@tailwindcss/postcss`), with globals in `src/app/globals.css`.
 
-When the backend is introduced, the board state in `KanbanBoard` is what will move to the API, and the `BoardData` JSON shape is the natural contract for both persistence and the AI structured-output updates.
+The `BoardData` JSON shape is the contract for the board API, persistence (`backend/app/models.py`) and the AI structured-output updates.
