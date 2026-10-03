@@ -54,10 +54,10 @@ Success: board is not visible until logging in with `user` / `password`; logout 
 
 ## Part 5: Database modeling (user sign-off)
 
-- [ ] Propose schema in `docs/DATABASE.md`: tables `users`, `boards` (one per user for MVP), `columns` (board_id, title, position), `cards` (column_id, title, details, position)
-- [ ] Include example JSON of a board as stored and as returned by the API (`BoardData`)
-- [ ] Describe creation on startup, seeding of the default board for a new user, and how `PUT /api/board` maps to rows
-- [ ] User reviews and approves
+- [x] Propose schema in `docs/DATABASE.md`: tables `users`, `boards` (one per user for MVP), `columns` (board_id, title, position), `cards` (column_id, title, details, position)
+- [x] Include example JSON of a board as stored and as returned by the API (`BoardData`)
+- [x] Describe creation on startup, seeding of the default board for a new user, and how `PUT /api/board` maps to rows
+- [x] User reviews and approves
 
 Success: user approves `docs/DATABASE.md`.
 
