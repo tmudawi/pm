@@ -52,6 +52,22 @@ describe("ChatSidebar", () => {
     expect(onBoardUpdate).not.toHaveBeenCalled();
   });
 
+  it("uses Shift+Enter for new lines and Enter to send", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(reply({ message: "Got it.", board: null }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<ChatSidebar open onClose={() => {}} onBoardUpdate={() => {}} />);
+    const input = screen.getByLabelText("Message");
+
+    await userEvent.type(input, "First line{Shift>}{Enter}{/Shift}Second line");
+    expect(input).toHaveValue("First line\nSecond line");
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    await userEvent.type(input, "{Enter}");
+    expect(await screen.findByText("Got it.")).toBeInTheDocument();
+    expect(sentBodies(fetchMock)[0].message).toBe("First line\nSecond line");
+    expect(input).toHaveValue("");
+  });
+
   it("passes a returned board to onBoardUpdate", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(reply({ message: "Added.", board: testBoard })));
     const onBoardUpdate = vi.fn();

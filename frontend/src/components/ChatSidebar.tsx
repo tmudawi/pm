@@ -91,13 +91,24 @@ export const ChatSidebar = ({ open, onClose, onBoardUpdate }: ChatSidebarProps) 
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="flex gap-2 border-t border-[var(--stroke)] px-5 py-4">
-        <input
+      <form
+        onSubmit={handleSubmit}
+        className="flex items-end gap-2 border-t border-[var(--stroke)] px-5 py-4"
+      >
+        <textarea
           value={input}
           onChange={(event) => setInput(event.target.value)}
+          onKeyDown={(event) => {
+            // Enter sends, Shift+Enter adds a new line
+            if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+              event.preventDefault();
+              event.currentTarget.form?.requestSubmit();
+            }
+          }}
           aria-label="Message"
           placeholder="Ask the AI..."
-          className="min-w-0 flex-1 rounded-xl border border-[var(--stroke)] bg-white px-3 py-2 text-sm text-[var(--navy-dark)] outline-none transition focus:border-[var(--primary-blue)]"
+          rows={3}
+          className="min-w-0 flex-1 resize-none rounded-xl border border-[var(--stroke)] bg-white px-3 py-2 text-sm leading-6 text-[var(--navy-dark)] outline-none transition focus:border-[var(--primary-blue)]"
         />
         <button
           type="submit"
